@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react'; // 1. Importamos useMemo
-import {
-    StyleSheet,
-    Text,
-    View,
-    SafeAreaView,
-    TouchableOpacity,
-    StatusBar,
-    TextInput,
-    FlatList,
-    ActivityIndicator
-} from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Link } from 'expo-router';
-import { supabase } from '../lib/supabase';
+import React, { useEffect, useMemo, useState } from 'react'; // 1. Importamos useMemo
+import {
+    ActivityIndicator,
+    FlatList,
+    SafeAreaView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
+import { fetchPedidosFinalizados, fetchPedidosPendentes } from './components_app/fetchPedidos';
 
 const PedidoItem = ({ nome }: { nome: string }) => (
     <TouchableOpacity style={styles.pedidoItem}>
@@ -21,45 +21,49 @@ const PedidoItem = ({ nome }: { nome: string }) => (
 );
 
 export default function TelaPedidos() {
-    const [todosPedidos, setTodosPedidos] = useState<any[]>([]); // Armazena a lista original, sem filtros
-    const [textoPesquisa, setTextoPesquisa] = useState(''); // 2. Estado para guardar o texto da pesquisa
-    const [loading, setLoading] = useState(true);
+    const [listaPedidosFinalizados, setListaPedidosFinalizados] = useState<any[]>([])
+    const [listaPedidosPendentes, setListaPedidosPendentes] = useState<any[]>([])
+    const [textoPesquisa, setTextoPesquisa] = useState('')
+    const [loading, setLoading] = useState(true)
+
+    const listarFinalizados = async () => {
+        try {
+            const finalizados = await fetchPedidosFinalizados()
+            setListaPedidosFinalizados(finalizados || [])
+            console.log ("pedidos finalizados", finalizados)
+        } catch (error) {
+            setListaPedidosFinalizados([])
+            console.error('Erro ao buscar pedidos finalizados:', error)
+        }
+    }
+
+    const listarPendentes = async () => {
+        try {
+            const pendentes = await fetchPedidosPendentes()
+            setListaPedidosPendentes(pendentes || [])
+        } catch (error) {
+            setListaPedidosPendentes([])
+            console.error('Erro ao buscar pedidos pendentes:', error)
+        }
+    }
 
     useEffect(() => {
-        fetchPedidos();
-    }, []);
-
-    const fetchPedidos = async () => {
-        setLoading(true);
-
-        const { data, error } = await supabase
-            .from('Vendas-2025')
-            .select(`
-        id_venda,
-        Data,
-        Total,
-        Clientes ( Nome ) 
-      `)
-            .eq('Pago', true);
-
-        if (error) {
-            console.error('Erro ao buscar pedidos:', error);
-        } else {
-            setTodosPedidos(data || []); // Guarda a lista completa e original
+        const carregarPedidos = async () => {
+            await listarFinalizados()
+            await listarPendentes()
+            setLoading(false)
         }
-        setLoading(false);
-    };
+        carregarPedidos()
+    }, [])
 
-    // 3. Lógica para filtrar os pedidos com base no texto da pesquisa
-    const pedidosFiltrados = useMemo(() => {
+    const pedidosFinalizados = useMemo(() => {
         if (!textoPesquisa) {
-            return todosPedidos; // Se a pesquisa estiver vazia, retorna a lista completa
+            return listaPedidosFinalizados
         }
-        // Retorna apenas os pedidos cujo nome do cliente (em minúsculas) inclui o texto da pesquisa (em minúsculas)
-        return todosPedidos.filter(pedido =>
+        return listaPedidosFinalizados.filter(pedido =>
             pedido.Clientes?.Nome.toLowerCase().includes(textoPesquisa.toLowerCase())
-        );
-    }, [todosPedidos, textoPesquisa]); // Esta função só é re-executada quando a lista original ou o texto da pesquisa mudam
+        )
+    }, [listaPedidosFinalizados, textoPesquisa])
 
 
     if (loading) {
@@ -69,7 +73,7 @@ export default function TelaPedidos() {
                     <ActivityIndicator size="large" color="#5C8E8B" />
                 </View>
             </SafeAreaView>
-        );
+        )
     }
 
     return (
@@ -114,7 +118,7 @@ export default function TelaPedidos() {
                     </View>
 
                     <FlatList
-                        data={pedidosFiltrados}
+                        data={pedidosFinalizados}
                         renderItem={({ item }) => <PedidoItem nome={item.Clientes?.Nome || 'Cliente não encontrado'} />}
                         keyExtractor={item => item.id_venda.toString()}
                         contentContainerStyle={styles.pedidosList}
@@ -122,10 +126,9 @@ export default function TelaPedidos() {
                 </View>
             </View>
         </SafeAreaView>
-    );
+    )
 }
 
-// Seus estilos (sem mudanças)
 const styles = StyleSheet.create({
     loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F4F1E9' },
     safeArea: { flex: 1, backgroundColor: '#F4F1E9' },
@@ -151,4 +154,4 @@ const styles = StyleSheet.create({
     pedidosList: { paddingBottom: 20 },
     pedidoItem: { backgroundColor: '#FFFFFF', paddingVertical: 15, paddingHorizontal: 20, marginBottom: 10, borderRadius: 10, borderBottomWidth: 1, borderBottomColor: '#eee', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 3 },
     pedidoNome: { fontSize: 18, color: '#333' },
-});
+})
