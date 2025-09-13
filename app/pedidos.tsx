@@ -1,10 +1,10 @@
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Link } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react'; // 1. Importamos useMemo
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
-    SafeAreaView,
+    SafeAreaView, 
     StatusBar,
     StyleSheet,
     Text,
@@ -13,14 +13,18 @@ import {
     View
 } from 'react-native';
 import { fetchPedidosFinalizados, fetchPedidosPendentes } from './components_app/fetchPedidos';
+import { supabase } from '@/lib/supabase';
 
-const PedidoItem = ({ nome }: { nome: string }) => (
-    <TouchableOpacity style={styles.pedidoItem}>
-        <Text style={styles.pedidoNome}>{nome}</Text>
-    </TouchableOpacity>
+const PedidoItem = ({ nome, id_venda }: { nome: string, id_venda: number }) => (
+    <Link href={`/pedidos/${id_venda}`} asChild>
+        <TouchableOpacity style={styles.pedidoItem}>
+            <Text style={styles.pedidoNome}>{nome}</Text>
+        </TouchableOpacity>
+    </Link>
 );
 
 export default function TelaPedidos() {
+    const [filtroAtivo, setFiltroAtivo] = useState<'finalizados' | 'pendentes'>('finalizados');
     const [listaPedidosFinalizados, setListaPedidosFinalizados] = useState<any[]>([])
     const [listaPedidosPendentes, setListaPedidosPendentes] = useState<any[]>([])
     const [textoPesquisa, setTextoPesquisa] = useState('')
@@ -30,7 +34,6 @@ export default function TelaPedidos() {
         try {
             const finalizados = await fetchPedidosFinalizados()
             setListaPedidosFinalizados(finalizados || [])
-            console.log ("pedidos finalizados", finalizados)
         } catch (error) {
             setListaPedidosFinalizados([])
             console.error('Erro ao buscar pedidos finalizados:', error)
@@ -47,24 +50,52 @@ export default function TelaPedidos() {
         }
     }
 
-    useEffect(() => {
-        const carregarPedidos = async () => {
-            await listarFinalizados()
-            await listarPendentes()
-            setLoading(false)
-        }
-        carregarPedidos()
-    }, [])
+    const carregarPedidosIniciais = async () => {
+        setLoading(true);
+        await Promise.all([listarFinalizados(), listarPendentes()]);
+        setLoading(false)
+    }
 
-    const pedidosFinalizados = useMemo(() => {
+    useEffect(() => {
+        carregarPedidosIniciais();
+    }, []);
+
+    useEffect(() => {
+        const subscription = supabase
+            .channel('vendas_realtime')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'Vendas-2025' },
+                (payload) => {
+                    console.log('Mudança recebida!', payload);
+                    listarFinalizados();
+                    listarPendentes();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(subscription);
+        };
+    }, []); 
+
+    const pedidosFinalizadosFiltrados = useMemo(() => {
         if (!textoPesquisa) {
             return listaPedidosFinalizados
         }
         return listaPedidosFinalizados.filter(pedido =>
             pedido.Clientes?.Nome.toLowerCase().includes(textoPesquisa.toLowerCase())
         )
-    }, [listaPedidosFinalizados, textoPesquisa])
+    }, [listaPedidosFinalizados, textoPesquisa]);
 
+    const pedidosPendentesFiltrados = useMemo(() => {
+        if (!textoPesquisa) {
+            return listaPedidosPendentes;
+        }
+        return listaPedidosPendentes.filter(pedido =>
+            pedido.Clientes?.Nome.toLowerCase().includes(textoPesquisa.toLowerCase())
+        );
+    }, [listaPedidosPendentes, textoPesquisa]);
 
     if (loading) {
         return (
@@ -84,42 +115,27 @@ export default function TelaPedidos() {
                 <View style={[styles.circle, styles.circleTwo]} />
                 <View style={[styles.circle, styles.circleThree]} />
                 <View style={[styles.circle, styles.circleFour]} />
-
                 <View style={styles.content}>
                     <View style={styles.header}>
-                        <Link href="/" asChild>
-                            <TouchableOpacity style={styles.backButton}>
-                                <FontAwesome5 name="arrow-left" size={24} color="#333" />
-                            </TouchableOpacity>
-                        </Link>
+                        <Link href="/" asChild><TouchableOpacity style={styles.backButton}><FontAwesome5 name="arrow-left" size={24} color="#333" /></TouchableOpacity></Link>
                         <FontAwesome5 name="clipboard-list" size={30} color="#333" style={styles.headerIcon} />
                         <Text style={styles.headerTitle}>Pedidos</Text>
                     </View>
-
-                    {/* 4. Conectamos o TextInput ao nosso estado */}
                     <View style={styles.searchContainer}>
-                        <TextInput
-                            style={styles.searchInput}
-                            placeholder="Pesquise aqui pelo nome..."
-                            placeholderTextColor="#888"
-                            value={textoPesquisa} 
-                            onChangeText={setTextoPesquisa} 
-                        />
+                        <TextInput style={styles.searchInput} placeholder="Pesquise aqui pelo nome..." placeholderTextColor="#888" value={textoPesquisa} onChangeText={setTextoPesquisa} />
                         <FontAwesome5 name="search" size={20} color="#888" style={styles.searchIcon} />
                     </View>
-
                     <View style={styles.filterContainer}>
-                        <TouchableOpacity style={[styles.filterButton, styles.filterButtonActive]}>
-                            <Text style={[styles.filterButtonText, styles.filterButtonTextActive]}>Finalizados</Text>
+                        <TouchableOpacity style={[styles.filterButton, filtroAtivo === 'finalizados' && styles.filterButtonActive]} onPress={() => setFiltroAtivo('finalizados')}>
+                            <Text style={[styles.filterButtonText, filtroAtivo === 'finalizados' && styles.filterButtonTextActive]}>Finalizados</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.filterButton}>
-                            <Text style={styles.filterButtonText}>Pendentes</Text>
+                        <TouchableOpacity style={[styles.filterButton, filtroAtivo === 'pendentes' && styles.filterButtonActive]} onPress={() => setFiltroAtivo('pendentes')}>
+                            <Text style={[styles.filterButtonText, filtroAtivo === 'pendentes' && styles.filterButtonTextActive]}>Pendentes</Text>
                         </TouchableOpacity>
                     </View>
-
                     <FlatList
-                        data={pedidosFinalizados}
-                        renderItem={({ item }) => <PedidoItem nome={item.Clientes?.Nome || 'Cliente não encontrado'} />}
+                        data={filtroAtivo === 'finalizados' ? pedidosFinalizadosFiltrados : pedidosPendentesFiltrados}
+                        renderItem={({ item }) => (<PedidoItem nome={item.Clientes?.Nome || 'Cliente não encontrado'} id_venda={item.id_venda} />)}
                         keyExtractor={item => item.id_venda.toString()}
                         contentContainerStyle={styles.pedidosList}
                     />
@@ -136,8 +152,8 @@ const styles = StyleSheet.create({
     circle: { position: 'absolute', opacity: 0.7 },
     circleOne: { width: 200, height: 200, borderRadius: 100, backgroundColor: '#D9A583', top: -50, left: -80 },
     circleTwo: { width: 300, height: 300, borderRadius: 150, backgroundColor: '#9FB5A8', top: 100, right: -120 },
-    circleThree: { width: 250, height: 250, borderRadius: 125, backgroundColor: '#8C5F54', bottom: -80, left: -100 },
-    circleFour: { width: 350, height: 350, borderRadius: 175, backgroundColor: '#D9C47E', bottom: -150, right: -100 },
+    circleThree: { width: 250, height: 250, borderRadius: 125, backgroundColor: '#8C5F54', bottom: 130, left: -100 },
+    circleFour: { width: 350, height: 350, borderRadius: 175, backgroundColor: '#D9C47E', bottom: -130, right: -100 },
     content: { flex: 1, padding: 20 },
     header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, paddingTop: 10 },
     backButton: { marginRight: 15, padding: 5 },
@@ -154,4 +170,4 @@ const styles = StyleSheet.create({
     pedidosList: { paddingBottom: 20 },
     pedidoItem: { backgroundColor: '#FFFFFF', paddingVertical: 15, paddingHorizontal: 20, marginBottom: 10, borderRadius: 10, borderBottomWidth: 1, borderBottomColor: '#eee', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 3 },
     pedidoNome: { fontSize: 18, color: '#333' },
-})
+});

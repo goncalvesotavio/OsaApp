@@ -1,17 +1,16 @@
 import React from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  SafeAreaView, 
+import {
+  StyleSheet,
+  Text,
+  View,
   TouchableOpacity,
   StatusBar,
   Image,
   ImageSourcePropType
 } from 'react-native';
-import { Link } from 'expo-router'; // 1. Importamos o Link para navegação
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Link } from 'expo-router';
 
-// O nosso componente MenuButton continua exatamente o mesmo
 const MenuButton = ({ iconSource, title, onPress }: { iconSource: ImageSourcePropType, title: string, onPress: () => void }) => {
   return (
     <TouchableOpacity style={styles.button} onPress={onPress}>
@@ -35,26 +34,28 @@ export default function TelaInicio() {
             Bem-Vindo! O que {'\n'} gostaria de consultar hoje?
           </Text>
 
-          {/* ***** A CORREÇÃO ESTÁ AQUI ***** */}
-          {/* 2. Envolvemos o MenuButton com o Link. Simples assim. */}
           <Link href="/pedidos" asChild>
-            <MenuButton 
+            <MenuButton
               iconSource={require('../assets/icons/pedidos.png')}
               title="Pedidos"
-              onPress={() => {}} // A navegação do Link tem prioridade, então o onPress pode ser vazio
+              onPress={() => { }}
             />
           </Link>
-          
-          {/* Os outros botões continuam iguais por enquanto */}
-          <MenuButton 
+
+          <MenuButton
             iconSource={require('../assets/icons/uniformes gestao.png')}
             title="Estoque Uniformes"
-            onPress={() => alert('Uniformes clicado!')} 
+            onPress={() => alert('Uniformes clicado!')}
           />
-          <MenuButton 
+          <MenuButton
             iconSource={require('../assets/icons/armarios gestao.png')}
             title="Estoque Armários"
-            onPress={() => alert('Armários clicado!')} 
+            onPress={() => alert('Armários clicado!')}
+          />
+          <MenuButton
+            iconSource={require('../assets/icons/relatorio.png')}
+            title="Relatório de Vendas"
+            onPress={() => alert('Relatório de Vendas clicado!')}
           />
         </View>
       </View>
@@ -62,7 +63,6 @@ export default function TelaInicio() {
   );
 }
 
-// Os estilos continuam os mesmos
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F4F1E9' },
   container: { flex: 1 },
