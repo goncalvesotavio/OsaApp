@@ -1,6 +1,6 @@
-import { FontAwesome5 } from '@expo/vector-icons';
-import { Link } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { FontAwesome5 } from '@expo/vector-icons'
+import { Link } from 'expo-router'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
     ActivityIndicator,
     FlatList,
@@ -12,8 +12,8 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import { fetchPedidosFinalizados, fetchPedidosPendentes } from './components_app/fetchPedidos';
-import { supabase } from '@/lib/supabase';
+import { fetchPedidosFinalizados, fetchPedidosPendentes } from '@/lib/fetchPedidos'
+import { supabase } from '@/supabase/supabase'
 
 const PedidoItem = ({ nome, id_venda }: { nome: string, id_venda: number }) => (
     <Link href={`/pedidos/${id_venda}`} asChild>

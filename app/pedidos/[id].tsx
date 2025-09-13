@@ -1,19 +1,18 @@
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
-import { useLocalSearchParams, Stack, Link } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, ScrollView, Image, TouchableOpacity, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-    fetchDetalhesPedidosUniforme,
+    checkIfVendaHasUniformes,
     fetchDetalhesPedidosArmario,
+    fetchDetalhesPedidosUniforme,
     fetchPedido,
-    updateStatusPagamento,
-    updateStatusRetirada,
     updateCompraFinalizada,
-    checkIfVendaHasUniformes
-} from '../components_app/fetchPedidos';
+    updateStatusPagamento
+} from '@/lib/fetchPedidos'
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'
+import { Link, Stack, useLocalSearchParams } from 'expo-router'
+import React, { useEffect, useState } from 'react'
+import { ActivityIndicator, Alert, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
-const ReciboIcon = require('../../assets/icons/recibo.png');
+const ReciboIcon = require('../../assets/icons/recibo.png')
 
 interface Pedido {
     id_venda: number;
@@ -45,16 +44,17 @@ interface ItemPedidoUnificado {
 }
 
 export default function DetalhesPedidoScreen() {
-    const { id } = useLocalSearchParams();
-    const vendaId = Number(id);
+    const { id } = useLocalSearchParams()
+    const vendaId = Number(id)
 
-    const [pedido, setPedido] = useState<Pedido | null>(null);
-    const [itensPedido, setItensPedido] = useState<ItemPedidoUnificado[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [pedido, setPedido] = useState<Pedido | null>(null)
+    const [itensPedido, setItensPedido] = useState<ItemPedidoUnificado[]>([])
+    const [loading, setLoading] = useState(true)
 
-    const [statusPago, setStatusPago] = useState(false);
-    const [statusRetirado, setStatusRetirado] = useState(false);
-    const [hasUniformes, setHasUniformes] = useState(false);
+    const [statusPago, setStatusPago] = useState(false)
+    const [statusRetirado, setStatusRetirado] = useState(false)
+    const [hasUniformes, setHasUniformes] = useState(false)
+    const [statusFinalizado, setStatusFinalizado] = useState(false)
 
     const carregarDetalhes = async () => {
         if (!vendaId) return;
@@ -65,16 +65,16 @@ export default function DetalhesPedidoScreen() {
                 fetchDetalhesPedidosUniforme(vendaId),
                 fetchDetalhesPedidosArmario(vendaId),
                 checkIfVendaHasUniformes(vendaId)
-            ]);
+            ])
 
             if (pedidoData && pedidoData.length > 0) {
-                const p = pedidoData[0];
-                setPedido(p);
-                setStatusPago(p.Pago);
-                setStatusRetirado(p.Retirado);
+                const p = pedidoData[0]
+                setPedido(p)
+                setStatusPago(p.Pago)
+                setStatusFinalizado(p.Compra_finalizada)
             }
 
-            setHasUniformes(uniformesCheck);
+            setHasUniformes(uniformesCheck)
 
             const itensUniformes = (uniformesData as ItemUniformeRaw[] || []).map(item => ({ id: `uniforme-${item.id}`, nome: item.Uniformes.Nome, detalhe: item.Estoque_uniforme?.Tamanho || '-', preco: item.Preco_total, quantidade: item.Qtd }));
             const itensArmarios = (armariosData as ItemArmarioRaw[] || []).map(item => ({ id: `armario-${item.id}`, nome: 'Armário', detalhe: `Nº ${item.N_armario}`, preco: item.Armários.preco_final }));
@@ -84,41 +84,36 @@ export default function DetalhesPedidoScreen() {
         } finally {
             setLoading(false);
         }
-    };
+    }
 
     useEffect(() => {
-        carregarDetalhes();
-    }, [vendaId]);
+        carregarDetalhes()
+    }, [vendaId])
 
     const handleSalvarPagamento = async () => {
-        if (!pedido) return;
-        const { error } = await updateStatusPagamento(pedido.id_venda, statusPago);
+        if (!pedido) return
+        const { error } = await updateStatusPagamento(pedido.id_venda, statusPago)
         if (error) {
-            Alert.alert("Erro", "Não foi possível salvar o status de pagamento.");
-            return;
+            Alert.alert("Erro", "Não foi possível salvar o status de pagamento.")
+            return
         }
 
-        const eFinalizado = hasUniformes ? (statusPago && statusRetirado) : statusPago;
-        await updateCompraFinalizada(pedido.id_venda, eFinalizado);
+        const eFinalizado = hasUniformes ? (statusPago && statusRetirado) : statusPago
+        await updateCompraFinalizada(pedido.id_venda, eFinalizado)
 
-        Alert.alert("Sucesso", "Status de pagamento salvo!");
-        await carregarDetalhes();
-    };
+        Alert.alert("Sucesso", "Status de pagamento salvo!")
+        await carregarDetalhes()
+    }
 
     const handleSalvarRetirada = async () => {
-        if (!pedido) return;
-        const { error } = await updateStatusRetirada(pedido.id_venda, statusRetirado);
-        if (error) {
-            Alert.alert("Erro", "Não foi possível salvar o status de retirada.");
-            return;
-        }
+        if (!pedido) return
 
-        const eFinalizado = statusPago && statusRetirado;
-        await updateCompraFinalizada(pedido.id_venda, eFinalizado);
+        const eFinalizado = statusPago && statusRetirado
+        await updateCompraFinalizada(pedido.id_venda, eFinalizado)
 
-        Alert.alert("Sucesso", "Status de retirada salvo!");
-        await carregarDetalhes();
-    };
+        Alert.alert("Sucesso", "Status de retirada salvo!")
+        await carregarDetalhes()
+    }
 
     if (loading) {
         return <SafeAreaView style={styles.safeArea}><View style={styles.loadingContainer}><ActivityIndicator size="large" color="#5C8E8B" /></View></SafeAreaView>;
@@ -175,12 +170,18 @@ export default function DetalhesPedidoScreen() {
                         <View style={styles.section}>
                             <View>
                                 <Text style={styles.sectionTitle}>Retirada:</Text>
-                                <TouchableOpacity style={styles.radioOption} onPress={() => setStatusRetirado(true)}>
-                                    <FontAwesome name={statusRetirado ? 'check-circle' : 'circle-thin'} size={20} color={statusRetirado ? '#5C8E8B' : '#888'} />
+                                <TouchableOpacity style={styles.radioOption} onPress={() => {
+                                    setStatusRetirado(true)
+                                    setStatusFinalizado(true)
+                                }}>
+                                    <FontAwesome name={statusFinalizado ? 'check-circle' : 'circle-thin'} size={20} color={statusFinalizado ? '#5C8E8B' : '#888'} />
                                     <Text style={styles.radioText}>Retirou</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity style={styles.radioOption} onPress={() => setStatusRetirado(false)}>
-                                    <FontAwesome name={!statusRetirado ? 'check-circle' : 'circle-thin'} size={20} color={!statusRetirado ? '#5C8E8B' : '#888'} />
+                                <TouchableOpacity style={styles.radioOption} onPress={() => {
+                                    setStatusRetirado(false)
+                                    setStatusFinalizado(false)
+                                }}>
+                                    <FontAwesome name={!statusFinalizado ? 'check-circle' : 'circle-thin'} size={20} color={!statusFinalizado ? '#5C8E8B' : '#888'} />
                                     <Text style={styles.radioText}>Ainda não retirou</Text>
                                 </TouchableOpacity>
                             </View>
@@ -239,4 +240,4 @@ const styles = StyleSheet.create({
     circleThree: { width: 250, height: 250, borderRadius: 125, backgroundColor: '#8C5454', bottom: -80, left: -100 },
     circleFour: { width: 350, height: 350, borderRadius: 175, backgroundColor: '#D9C47E', bottom: -150, right: -100 },
     reciboIcon: { width: 40, height: 40, marginRight: 10, marginLeft: 20, resizeMode: 'contain' },
-});
+})
