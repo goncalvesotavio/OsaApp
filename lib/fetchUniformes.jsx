@@ -8,6 +8,7 @@ export async function fetchUniformes() {
       Nome,
       Img,
       Preço,
+      Categoria,
       Estoque_uniforme(Qtd_estoque)
     `)
 
@@ -27,6 +28,7 @@ export async function buscarUniforme(id_uniforme) {
       Nome,
       Img,
       Preço,
+      Categoria,
       Estoque_uniforme(Qtd_estoque)
     `)
     .eq('id_uniforme', id_uniforme)
@@ -38,7 +40,7 @@ export async function buscarUniforme(id_uniforme) {
 
   const produtos = data.map(item => {
     const totalEstoque = item.Estoque_uniforme
-      ? item.Estoque_uniforme.reduce((soma, e) => soma + e.Qtd_estoque)
+      ? item.Estoque_uniforme.reduce((soma, e) => soma + e.Qtd_estoque, 0)
       : 0
 
     return {
@@ -50,15 +52,15 @@ export async function buscarUniforme(id_uniforme) {
   return produtos
 }
 
-export async function detalhesEstoque(id_uniforme){
-    const { data, errorr } = await supabase
-      .from('Estoque_uniforme')
-      .select(`
+export async function detalhesEstoque(id_uniforme) {
+  const { data, error } = await supabase
+    .from('Estoque_uniforme')
+    .select(`
         id_estoque,
         Tamanho,
         Qtd_estoque
       `)
-      .eq('id_uniforme', id_uniforme)
+    .eq('id_uniforme', id_uniforme)
 
   if (error) {
     console.error('Erro ao buscar estoque de uniformes:', error)
@@ -69,12 +71,12 @@ export async function detalhesEstoque(id_uniforme){
 }
 
 export async function atualizarEstoque(id_estoque, novaQtd) {
-    const { data, error } = await supabase
-      .from('Estoque_uniforme')
-      .update({ Qtd_estoque: novaQtd })
-      .eq('id_estoque', id_estoque)
+  const { data, error } = await supabase
+    .from('Estoque_uniforme')
+    .update({ Qtd_estoque: novaQtd })
+    .eq('id_estoque', id_estoque)
 
-      if (error) {
-        console.error('Erro ao atualizar estoque: ', error)
-      }
+  if (error) {
+    console.error('Erro ao atualizar estoque: ', error)
+  }
 }

@@ -35,27 +35,33 @@ export default function TelaInicio() {
           </Text>
 
           <Link href="/pedidos" asChild>
-            <MenuButton
+            <MenuButton 
               iconSource={require('../assets/icons/pedidos.png')}
               title="Pedidos"
-              onPress={() => { }}
+              onPress={() => {}}
+            />
+          </Link>
+          
+          <Link href="/estoque-uniformes" asChild>
+            <MenuButton 
+              iconSource={require('../assets/icons/uniformes gestao.png')}
+              title="Estoque Uniformes"
+              onPress={() => {}}
             />
           </Link>
 
-          <MenuButton
-            iconSource={require('../assets/icons/uniformes gestao.png')}
-            title="Estoque Uniformes"
-            onPress={() => alert('Uniformes clicado!')}
-          />
-          <MenuButton
-            iconSource={require('../assets/icons/armarios gestao.png')}
-            title="Estoque Armários"
-            onPress={() => alert('Armários clicado!')}
-          />
-          <MenuButton
+          <Link href="/estoque-armarios" asChild>
+            <MenuButton 
+              iconSource={require('../assets/icons/armarios gestao.png')}
+              title="Estoque Armários"
+              onPress={() => {}}
+            />
+          </Link>
+          
+          <MenuButton 
             iconSource={require('../assets/icons/relatorio.png')}
             title="Relatório de Vendas"
-            onPress={() => alert('Relatório de Vendas clicado!')}
+            onPress={() => alert('Relatório de Vendas clicado!')} 
           />
         </View>
       </View>
