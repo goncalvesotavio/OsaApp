@@ -34,10 +34,26 @@ const secoesCorredor2 = [
     { secao: 22, titulo: 'Armário Nº22', armarios: Array.from({ length: 16 }, (_, i) => i + 353) }
 ];
 
+const secoesCorredor3 = [
+    { secao: 23, titulo: 'Armário Nº23', armarios: Array.from({ length: 20 }, (_, i) => i + 369) },
+    { secao: 24, titulo: 'Armário Nº24', armarios: Array.from({ length: 16 }, (_, i) => i + 389) },
+    { secao: 25, titulo: 'Armário Nº25', armarios: Array.from({ length: 16 }, (_, i) => i + 405) },
+    { secao: 26, titulo: 'Armário Nº26', armarios: Array.from({ length: 16 }, (_, i) => i + 421) },
+    { secao: 27, titulo: 'Armário Nº27', armarios: Array.from({ length: 16 }, (_, i) => i + 437) },
+    { secao: 28, titulo: 'Armário Nº28', armarios: Array.from({ length: 20 }, (_, i) => i + 453) }
+];
+
+const secoesMecanica = [
+    { secao: 29, titulo: 'Armário Nº29', armarios: Array.from({ length: 20 }, (_, i) => i + 473) },
+    { secao: 30, titulo: 'Armário Nº30', armarios: Array.from({ length: 20 }, (_, i) => i + 493) },
+    { secao: 31, titulo: 'Armário Nº31', armarios: Array.from({ length: 8 }, (_, i) => i + 513) },
+    { secao: 32, titulo: 'Armário Nº32', armarios: Array.from({ length: 8 }, (_, i) => i + 521) },
+    { secao: 33, titulo: 'Armário Nº33', armarios: Array.from({ length: 8 }, (_, i) => i + 529) }
+];
+
 export default function TelaDetalheCorredor() {
     const { id: corredorId } = useLocalSearchParams();
-    const [armarioSelecionado, setArmarioSelecionado] = useState<number | null>(null);
-    
+
     const SecaoArmario = ({ secao }) => (
         <View style={styles.secaoContainer}>
             <Text style={styles.secaoTitulo}>{secao.titulo}</Text>
@@ -46,12 +62,11 @@ export default function TelaDetalheCorredor() {
                 keyExtractor={item => item.toString()}
                 numColumns={4}
                 renderItem={({ item: num }) => (
-                    <TouchableOpacity
-                        style={[ styles.botaoArmario, armarioSelecionado === num && styles.selecionado ]}
-                        onPress={() => setArmarioSelecionado(num)}
-                    >
-                        <Text style={styles.botaoArmarioTexto}>{num}</Text>
-                    </TouchableOpacity>
+                    <Link href={`/estoque-armarios/detalhe/${num}`} asChild>
+                        <TouchableOpacity style={styles.botaoArmario}>
+                            <Text style={styles.botaoArmarioTexto}>{num}</Text>
+                        </TouchableOpacity>
+                    </Link>
                 )}
                 scrollEnabled={false}
                 columnWrapperStyle={styles.gridRow}
@@ -65,78 +80,24 @@ export default function TelaDetalheCorredor() {
                 <Text style={styles.sidebarTexto}>SALA</Text>
                 <Text style={styles.sidebarTexto}>{numero}</Text>
             </View>
-        </View>
-    );
-    
-    const LayoutCorredor1 = () => (
-        <View style={styles.layoutContainer}>
-            <View style={styles.sidebarContainer}>
-                <View style={styles.linhaConectora} />
-                <LinhaSala numero={1} />
-                <View style={{height: 168}} />
-                <View style={{height: 168}} />
-                <LinhaSala numero={2} />
-                <View style={{height: 168}} />
-                <View style={{height: 168}} />
-                <View style={{height: 168}} />
-                <LinhaSala numero={3} />
-                <View style={{height: 168}} />
-                <View style={{height: 168}} />
-                <LinhaSala numero={4} />
-                <View style={{height: 80}} />
-                <LinhaSala numero={5} />
-                <View style={{height: 168}} />
-                <View style={{height: 168}} />
-                <LinhaSala numero={6} />
-                <View style={{height: 168}} />
-                <View style={{height: 168}} />
-                <LinhaSala numero={7} />
-            </View>
-            <View style={styles.armariosContainer}>
-                <SecaoArmario secao={secoesCorredor1[0]} />
-                <SecaoArmario secao={secoesCorredor1[1]} />
-                <SecaoArmario secao={secoesCorredor1[2]} />
-                <SecaoArmario secao={secoesCorredor1[3]} />
-                <SecaoArmario secao={secoesCorredor1[4]} />
-                <SecaoArmario secao={secoesCorredor1[5]} />
-                <SecaoArmario secao={secoesCorredor1[6]} />
-                <SecaoArmario secao={secoesCorredor1[7]} />
-                <SecaoArmario secao={secoesCorredor1[8]} />
-                <SecaoArmario secao={secoesCorredor1[9]} />
-                <SecaoArmario secao={secoesCorredor1[10]} />
-                <SecaoArmario secao={secoesCorredor1[11]} />
-            </View>
+            <View style={styles.secaoEspaco} />
         </View>
     );
 
+    const LayoutCorredor1 = () => (
+        <><LinhaSala numero={1} /><SecaoArmario secao={secoesCorredor1[0]} /><SecaoArmario secao={secoesCorredor1[1]} /><LinhaSala numero={2} /><SecaoArmario secao={secoesCorredor1[2]} /><SecaoArmario secao={secoesCorredor1[3]} /><SecaoArmario secao={secoesCorredor1[4]} /><LinhaSala numero={3} /><SecaoArmario secao={secoesCorredor1[5]} /><SecaoArmario secao={secoesCorredor1[6]} /><LinhaSala numero={4} /><SecaoArmario secao={secoesCorredor1[7]} /><LinhaSala numero={5} /><SecaoArmario secao={secoesCorredor1[8]} /><SecaoArmario secao={secoesCorredor1[9]} /><LinhaSala numero={6} /><SecaoArmario secao={secoesCorredor1[10]} /><SecaoArmario secao={secoesCorredor1[11]} /><LinhaSala numero={7} /></>
+    );
+
     const LayoutCorredor2 = () => (
-        <View style={styles.layoutContainer}>
-            <View style={styles.sidebarContainer}>
-                <View style={styles.linhaConectora} />
-                <View style={{height: 100}} />
-                <LinhaSala numero={8} />
-                <View style={{height: 250}}/>
-                <LinhaSala numero={9} />
-                <View style={{height: 250}}/>
-                <LinhaSala numero={10} />
-                <View style={{height: 250}}/>
-                <LinhaSala numero={11} />
-                <View style={{height: 250}}/>
-                <LinhaSala numero={12} />
-            </View>
-            <View style={styles.armariosContainer}>
-                <SecaoArmario secao={secoesCorredor2[0]} />
-                <SecaoArmario secao={secoesCorredor2[1]} />
-                <SecaoArmario secao={secoesCorredor2[2]} />
-                <SecaoArmario secao={secoesCorredor2[3]} />
-                <SecaoArmario secao={secoesCorredor2[4]} />
-                <SecaoArmario secao={secoesCorredor2[5]} />
-                <SecaoArmario secao={secoesCorredor2[6]} />
-                <SecaoArmario secao={secoesCorredor2[7]} />
-                <SecaoArmario secao={secoesCorredor2[8]} />
-                <SecaoArmario secao={secoesCorredor2[9]} />
-            </View>
-        </View>
+        <><SecaoArmario secao={secoesCorredor2[0]} /><LinhaSala numero={8} /><SecaoArmario secao={secoesCorredor2[1]} /><SecaoArmario secao={secoesCorredor2[2]} /><SecaoArmario secao={secoesCorredor2[3]} /><LinhaSala numero={9} /><SecaoArmario secao={secoesCorredor2[4]} /><SecaoArmario secao={secoesCorredor2[5]} /><LinhaSala numero={10} /><SecaoArmario secao={secoesCorredor2[6]} /><SecaoArmario secao={secoesCorredor2[7]} /><LinhaSala numero={11} /><SecaoArmario secao={secoesCorredor2[8]} /><SecaoArmario secao={secoesCorredor2[9]} /><LinhaSala numero={12} /></>
+    );
+
+    const LayoutCorredor3 = () => (
+        <><LinhaSala numero={13} /><SecaoArmario secao={secoesCorredor3[0]} /><SecaoArmario secao={secoesCorredor3[1]} /><LinhaSala numero={14} /><SecaoArmario secao={secoesCorredor3[2]} /><SecaoArmario secao={secoesCorredor3[3]} /><SecaoArmario secao={secoesCorredor3[4]} /><LinhaSala numero={15} /><SecaoArmario secao={secoesCorredor3[5]} /><LinhaSala numero={16} /></>
+    );
+
+    const LayoutMecanica = () => (
+        <><SecaoArmario secao={secoesMecanica[0]} /><SecaoArmario secao={secoesMecanica[1]} /><LinhaSala numero={17} /><SecaoArmario secao={secoesMecanica[2]} /><SecaoArmario secao={secoesMecanica[3]} /><SecaoArmario secao={secoesMecanica[4]} /><LinhaSala numero={18} /></>
     );
 
     return (
@@ -156,8 +117,11 @@ export default function TelaDetalheCorredor() {
             <Text style={styles.subtitle}>Selecione um armário:</Text>
 
             <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <View style={styles.linhaConectora} />
                 {corredorId === '1' && <LayoutCorredor1 />}
                 {corredorId === '2' && <LayoutCorredor2 />}
+                {corredorId === '3' && <LayoutCorredor3 />}
+                {corredorId === 'mecanica' && <LayoutMecanica />}
             </ScrollView>
         </SafeAreaView>
     );
@@ -175,81 +139,16 @@ const styles = StyleSheet.create({
     headerIcon: { width: 35, height: 35, marginRight: 10 },
     headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#333' },
     subtitle: { fontSize: 22, color: '#444', fontWeight: '500', marginBottom: 15, textAlign: 'center' },
-    scrollContainer: { paddingBottom: 20 },
-    layoutContainer: { flexDirection: 'row' },
-    sidebarContainer: {
-        width: 80,
-        alignItems: 'center',
-        paddingTop: 25,
-        paddingBottom: 25,
-    },
-    linhaConectora: {
-        position: 'absolute',
-        top: 50,
-        bottom: 50,
-        width: 26,
-        backgroundColor: '#9FB5A8',
-        borderRadius: 13,
-    },
-    linhaSala: {
-        height: 50,
-        justifyContent: 'center',
-        zIndex: 1,
-    },
-    sidebarNumero: { 
-        width: 50, 
-        height: 50, 
-        borderRadius: 25, 
-        backgroundColor: '#D9C47E', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        elevation: 3, 
-        shadowColor: '#000', 
-        shadowOpacity: 0.2, 
-        shadowRadius: 3, 
-        shadowOffset: { width: 0, height: 2 },
-    },
-    sidebarTexto: { 
-        color: '#FFF', 
-        fontWeight: 'bold', 
-        fontSize: 12 
-    },
-    armariosContainer: {
-        flex: 1,
-        paddingRight: 10,
-    },
-    secaoContainer: { 
-        marginBottom: 20 
-    },
-    secaoTitulo: { 
-        textAlign: 'center', 
-        fontWeight: '600', 
-        color: '#666', 
-        marginBottom: 10,
-        fontSize: 18
-    },
-    gridRow: { 
-        justifyContent: 'flex-start' 
-    },
-    botaoArmario: { 
-        width: '22%', 
-        aspectRatio: 1, 
-        margin: '1.5%', 
-        backgroundColor: '#FFF', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        borderRadius: 8, 
-        borderWidth: 1, 
-        borderColor: '#DDD' 
-    },
-    selecionado: { 
-        borderColor: '#FFA500', 
-        borderWidth: 2, 
-        backgroundColor: '#FFF8E1' 
-    },
-    botaoArmarioTexto: { 
-        fontSize: 16, 
-        fontWeight: 'bold', 
-        color: '#333' 
-    },
+    scrollContainer: { paddingHorizontal: 10, paddingTop: 20 },
+    linhaConectora: { position: 'absolute', width: 26, backgroundColor: '#9FB5A8', top: 35, bottom: 35, left: 32, borderRadius: 13 },
+    linhaSala: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+    sidebarNumero: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#D9C47E', justifyContent: 'center', alignItems: 'center', elevation: 3, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 3, shadowOffset: { width: 0, height: 2 }, zIndex: 1, marginLeft: 20 },
+    sidebarTexto: { color: '#FFF', fontWeight: 'bold', fontSize: 12 },
+    secaoEspaco: { flex: 1 },
+    secaoContainer: { marginLeft: 70, marginBottom: 20 },
+    secaoTitulo: { textAlign: 'center', fontWeight: '600', color: '#666', marginBottom: 10, fontSize: 18 },
+    gridRow: { justifyContent: 'flex-start' },
+    botaoArmario: { width: '22%', aspectRatio: 1, margin: '1.5%', backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', borderRadius: 8, borderWidth: 1, borderColor: '#DDD' },
+    selecionado: { borderColor: '#FFA500', borderWidth: 2, backgroundColor: '#FFF8E1' },
+    botaoArmarioTexto: { fontSize: 16, fontWeight: 'bold', color: '#333' }
 });

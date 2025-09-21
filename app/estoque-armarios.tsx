@@ -9,8 +9,8 @@ const ArmarioIcon = require('../assets/icons/armarios gestao.png');
 const corredores = [
     { nome: "Corredor 1", href: "/estoque-armarios/1" },
     { nome: "Corredor 2", href: "/estoque-armarios/2" },
-    { nome: "Corredor 3", href: null },
-    { nome: "Mecânica", href: null }
+    { nome: "Corredor 3", href: "/estoque-armarios/3" },
+    { nome: "Mecânica", href: "/estoque-armarios/mecanica" }
 ];
 
 export default function TelaEstoqueArmarios() {
