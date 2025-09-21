@@ -1,4 +1,7 @@
 import {
+    apagarDetalhesArmario,
+    apagarDetalhesUniformes,
+    apagarVenda,
     checkIfVendaHasUniformes,
     fetchDetalhesPedidosArmario,
     fetchDetalhesPedidosUniforme,
@@ -9,7 +12,7 @@ import {
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'
 import { Link, Stack, useLocalSearchParams } from 'expo-router'
 import React, { useEffect, useState } from 'react'
-import { ActivityIndicator, Alert, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, FlatList, Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 const ReciboIcon = require('../../assets/icons/recibo.png')
@@ -130,7 +133,19 @@ export default function DetalhesPedidoScreen() {
             <Text style={[styles.tableCell, styles.tableCellSize]}>{item.detalhe}</Text>
             <Text style={[styles.tableCell, styles.tableCellPrice]}>{item.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Text>
         </View>
-    );
+    )
+
+    const handleApagar = async () => {
+        if (hasUniformes) {
+            await apagarDetalhesUniformes(vendaId)
+        }
+
+        if (itensPedido.some(item => item.id.startsWith('armario-'))) {
+            await apagarDetalhesArmario(vendaId)
+        }
+
+        await apagarVenda(vendaId)
+    }
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -141,12 +156,14 @@ export default function DetalhesPedidoScreen() {
             <View style={[styles.circle, styles.circleFour]} />
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.card}>
+                    <Pressable onPress={handleApagar}><Text>Apagar</Text></Pressable>
                     <View style={styles.header}>
                         <Link href="/pedidos" style={styles.backButton}><FontAwesome5 name="arrow-left" size={24} color="#333" /></Link>
                         <FontAwesome5 name="clipboard-list" size={30} color="#333" style={styles.headerIcon} />
                         <Text style={styles.headerTitle}>Pedidos</Text>
                     </View>
                     <Text style={styles.clientName}>{pedido.Clientes.Nome}</Text>
+                    <Text>{vendaId}</Text>
                     <View style={styles.table}><FlatList data={itensPedido} renderItem={renderItem} keyExtractor={(item) => item.id} scrollEnabled={false} /></View>
 
                     <View style={styles.section}>

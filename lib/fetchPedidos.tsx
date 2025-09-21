@@ -116,3 +116,36 @@ export async function checkIfVendaHasUniformes(id_venda: number) {
 
     return data && data.length > 0;
 }
+
+export async function apagarDetalhesUniformes(id_venda: number) {
+  const { error } = await supabase
+    .from('Vendas_uniformes')
+    .delete()
+    .eq('id_venda', id_venda)
+
+  if (error){
+    console.error('Erro ao apagar detalhes de uniformes: ', error)
+  }
+}
+
+export async function apagarDetalhesArmario(id_venda: number) {
+  const { error } = await supabase
+    .from('Vendas_armários')
+    .delete()
+    .eq('id_venda', id_venda)
+
+  if (error){
+    console.error('Erro ao apagar detalhes do armário: ', error)
+  }
+}
+
+export async function apagarVenda(id_venda: number) {
+  const { error } = await supabase
+    .from('Vendas-2025')
+    .delete()
+    .eq('id_venda', id_venda)
+
+  if (error){
+    console.error('Erro ao apagar venda: ', error)
+  }
+}
