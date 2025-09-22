@@ -37,6 +37,7 @@ interface ItemArmarioRaw {
     id: number;
     N_armario: number;
     Armários: { preco_final: number };
+    Hora_compra: string
 }
 interface ItemPedidoUnificado {
     id: string;
