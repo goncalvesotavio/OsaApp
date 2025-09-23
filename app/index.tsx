@@ -1,15 +1,15 @@
-import React from 'react';
+import { Link } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
+  Image,
+  ImageSourcePropType,
+  StatusBar,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  StatusBar,
-  Image,
-  ImageSourcePropType
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link } from 'expo-router';
 
 const MenuButton = ({ iconSource, title, onPress }: { iconSource: ImageSourcePropType, title: string, onPress: () => void }) => {
   return (
@@ -21,6 +21,24 @@ const MenuButton = ({ iconSource, title, onPress }: { iconSource: ImageSourcePro
 };
 
 export default function TelaInicio() {
+const [mensagemRecebida, setMensagemRecebida] = useState('');
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch('http://192.168.0.100:3001/distancia');
+        const data = await response.json();
+        const texto = data.distancia < 10 ? 'Objeto detectado' : 'Sem objeto';
+        console.log('Mensagem recebida: ', texto)
+        setMensagemRecebida(texto);
+      } catch (err) {
+        console.log('Erro ao buscar distância:', err);
+      }
+    }, 500); // atualiza a cada 0.5s
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#F4F1E9" />
@@ -30,6 +48,7 @@ export default function TelaInicio() {
         <View style={[styles.circle, styles.circleThree]} />
         <View style={[styles.circle, styles.circleFour]} />
         <View style={styles.content}>
+           <Text style={styles.text}>{mensagemRecebida}</Text>
           <Text style={styles.title}>
             Bem-Vindo! O que {'\n'} gostaria de consultar hoje?
           </Text>
@@ -82,4 +101,5 @@ const styles = StyleSheet.create({
   button: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', paddingVertical: 15, paddingHorizontal: 25, borderRadius: 30, marginBottom: 20, width: '90%', maxWidth: 400, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3.84, elevation: 5 },
   buttonIconImage: { width: 35, height: 35, marginRight: 20 },
   buttonText: { fontSize: 18, fontWeight: '500', color: '#333' },
+  text: { fontSize: 24, fontWeight: 'bold' }
 });
