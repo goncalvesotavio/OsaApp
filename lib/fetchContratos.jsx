@@ -13,7 +13,7 @@ export async function fetchContrato(ano) {
       return data
 }
 
-export async function atualizarContrato(file, nomeArquivo) {
+export async function salvarContrato(file, nomeArquivo) {
     try {
     const filePath = `Contratos/${nomeArquivo}`; // caminho dentro do bucket
 
@@ -43,27 +43,6 @@ export async function atualizarURLContrato(ano, url) {
       if (error) {
         console.error("Erro ao atualizar a URL do contrato: ", error)
       }
-}
-
-export async function novoContrato(file, nomeArquivo) {
-    try {
-    const filePath = `Contratos/${nomeArquivo}`; // caminho dentro do bucket
-
-    const { error: uploadError } = await supabase.storage
-      .from("arquivos")
-      .upload(filePath, file, { upsert: true });
-
-    if (uploadError) throw uploadError;
-
-    const { data } = supabase.storage.from("arquivos").getPublicUrl(filePath);
-    const publicUrl = data.publicUrl;
-
-    console.log("Arquivo salvo com sucesso:", publicUrl);
-    return publicUrl;
-  } catch (err) {
-    console.error("Erro ao salvar arquivo:", err);
-    return null;
-  }
 }
 
 export async function novoURLContrato(ano, url) {
