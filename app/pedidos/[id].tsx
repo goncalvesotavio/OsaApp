@@ -63,25 +63,42 @@ export default function DetalhesPedidoScreen() {
         if (!vendaId) return;
         try {
             setLoading(true);
-            const [pedidoData, uniformesData, armariosData, uniformesCheck] = await Promise.all([
-                fetchPedido(vendaId),
-                fetchDetalhesPedidosUniforme(vendaId),
-                fetchDetalhesPedidosArmario(vendaId),
-                checkIfVendaHasUniformes(vendaId)
-            ])
+            const pedidoPromise = fetchPedido(vendaId);
+            const uniformesPromise = fetchDetalhesPedidosUniforme(vendaId);
+            const armariosPromise = fetchDetalhesPedidosArmario(vendaId);
+            const uniformesCheckPromise = checkIfVendaHasUniformes(vendaId);
+
+            const pedidoData: Pedido[] = await pedidoPromise;
+            const uniformesData: ItemUniformeRaw[] = await uniformesPromise;
+            const armariosData: ItemArmarioRaw[] = await armariosPromise;
+            const uniformesCheck: boolean = await uniformesCheckPromise;
 
             if (pedidoData && pedidoData.length > 0) {
                 const p = pedidoData[0]
                 setPedido(p)
                 setStatusPago(p.Pago)
-                setStatusRetirado(p.Retirado)
+                setStatusRetirado(p.Compra_finalizada)
                 setStatusFinalizado(p.Compra_finalizada)
             }
 
             setHasUniformes(uniformesCheck)
 
-            const itensUniformes = (uniformesData as ItemUniformeRaw[] || []).map(item => ({ id: `uniforme-${item.id}`, nome: item.Uniformes.Nome, detalhe: item.Estoque_uniforme?.Tamanho || '-', preco: item.Preco_total, quantidade: item.Qtd }));
-            const itensArmarios = (armariosData as ItemArmarioRaw[] || []).map(item => ({ id: `armario-${item.id}`, nome: 'Armário', detalhe: `Nº ${item.N_armario}`, preco: item.Armários.preco_final }));
+            const itensUniformes = (uniformesData as ItemUniformeRaw[] || []).map(item => ({ 
+                id: `uniforme-${item.id}`, 
+                nome: item.Uniformes.Nome, 
+                detalhe: item.Estoque_uniforme?.Tamanho || '-', 
+                preco: item.Preco_total, 
+                quantidade: item.Qtd 
+            }))
+            const itensArmarios = (armariosData || []).map(item => ({
+                id: `armario-${item.id}`,
+                nome: 'Armário',
+                detalhe: `Nº ${item.N_armario}`,
+                preco: item.Armários?.preco_final ?? 0,
+            }))
+            console.log('Uniformes:', uniformesData);
+            console.log('Armarios:', armariosData);
+
             setItensPedido([...itensUniformes, ...itensArmarios]);
         } catch (error) {
             console.error("Erro ao carregar detalhes do pedido:", error);
@@ -267,4 +284,4 @@ const styles = StyleSheet.create({
     circleThree: { width: 250, height: 250, borderRadius: 125, backgroundColor: '#8C5454', bottom: -80, left: -100 },
     circleFour: { width: 350, height: 350, borderRadius: 175, backgroundColor: '#D9C47E', bottom: -150, right: -100 },
     reciboIcon: { width: 40, height: 40, marginRight: 10, marginLeft: 20, resizeMode: 'contain' },
-});
+})
