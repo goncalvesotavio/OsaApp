@@ -1,8 +1,6 @@
 import {
-    apagarDetalhesArmario,
-    apagarDetalhesUniformes,
-    apagarVenda,
     checkIfVendaHasUniformes,
+    deletePedido,
     fetchDetalhesPedidosArmario,
     fetchDetalhesPedidosUniforme,
     fetchPedido,
@@ -10,9 +8,9 @@ import {
     updateStatusPagamento
 } from '@/lib/fetchPedidos'
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'
-import { Link, Stack, useLocalSearchParams } from 'expo-router'
+import { Link, Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
-import { ActivityIndicator, Alert, FlatList, Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 const ReciboIcon = require('../../assets/icons/recibo.png')
@@ -24,6 +22,7 @@ interface Pedido {
     Total: number;
     Pago: boolean;
     Retirado: boolean;
+    Compra_finalizada: boolean;
     Clientes: { Nome: string };
 }
 interface ItemUniformeRaw {
@@ -37,7 +36,6 @@ interface ItemArmarioRaw {
     id: number;
     N_armario: number;
     Armários: { preco_final: number };
-    Hora_compra: string
 }
 interface ItemPedidoUnificado {
     id: string;
@@ -50,6 +48,7 @@ interface ItemPedidoUnificado {
 export default function DetalhesPedidoScreen() {
     const { id } = useLocalSearchParams()
     const vendaId = Number(id)
+    const router = useRouter()
 
     const [pedido, setPedido] = useState<Pedido | null>(null)
     const [itensPedido, setItensPedido] = useState<ItemPedidoUnificado[]>([])
@@ -75,6 +74,7 @@ export default function DetalhesPedidoScreen() {
                 const p = pedidoData[0]
                 setPedido(p)
                 setStatusPago(p.Pago)
+                setStatusRetirado(p.Retirado)
                 setStatusFinalizado(p.Compra_finalizada)
             }
 
@@ -119,6 +119,30 @@ export default function DetalhesPedidoScreen() {
         await carregarDetalhes()
     }
 
+    const handleDelete = () => {
+        if (!pedido) return;
+        Alert.alert(
+            "Confirmar Exclusão",
+            `Tem certeza que deseja deletar o pedido de ${pedido.Clientes.Nome}? Esta ação não pode ser desfeita.`,
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Deletar",
+                    style: "destructive",
+                    onPress: async () => {
+                        const { error } = await deletePedido(pedido.id_venda);
+                        if (error) {
+                            Alert.alert("Erro", "Não foi possível deletar o pedido.");
+                        } else {
+                            Alert.alert("Sucesso", "Pedido deletado com sucesso.");
+                            router.back();
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
     if (loading) {
         return <SafeAreaView style={styles.safeArea}><View style={styles.loadingContainer}><ActivityIndicator size="large" color="#5C8E8B" /></View></SafeAreaView>;
     }
@@ -134,19 +158,7 @@ export default function DetalhesPedidoScreen() {
             <Text style={[styles.tableCell, styles.tableCellSize]}>{item.detalhe}</Text>
             <Text style={[styles.tableCell, styles.tableCellPrice]}>{item.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Text>
         </View>
-    )
-
-    const handleApagar = async () => {
-        if (hasUniformes) {
-            await apagarDetalhesUniformes(vendaId)
-        }
-
-        if (itensPedido.some(item => item.id.startsWith('armario-'))) {
-            await apagarDetalhesArmario(vendaId)
-        }
-
-        await apagarVenda(vendaId)
-    }
+    );
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -157,14 +169,16 @@ export default function DetalhesPedidoScreen() {
             <View style={[styles.circle, styles.circleFour]} />
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.card}>
-                    <Pressable onPress={handleApagar}><Text>Apagar</Text></Pressable>
                     <View style={styles.header}>
                         <Link href="/pedidos" style={styles.backButton}><FontAwesome5 name="arrow-left" size={24} color="#333" /></Link>
                         <FontAwesome5 name="clipboard-list" size={30} color="#333" style={styles.headerIcon} />
                         <Text style={styles.headerTitle}>Pedidos</Text>
+                        <View style={{ flex: 1 }} />
+                        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+                            <FontAwesome5 name="trash-alt" size={22} color="#E53935" />
+                        </TouchableOpacity>
                     </View>
                     <Text style={styles.clientName}>{pedido.Clientes.Nome}</Text>
-                    <Text>{vendaId}</Text>
                     <View style={styles.table}><FlatList data={itensPedido} renderItem={renderItem} keyExtractor={(item) => item.id} scrollEnabled={false} /></View>
 
                     <View style={styles.section}>
@@ -188,18 +202,12 @@ export default function DetalhesPedidoScreen() {
                         <View style={styles.section}>
                             <View>
                                 <Text style={styles.sectionTitle}>Retirada:</Text>
-                                <TouchableOpacity style={styles.radioOption} onPress={() => {
-                                    setStatusRetirado(true)
-                                    setStatusFinalizado(true)
-                                }}>
-                                    <FontAwesome name={statusFinalizado ? 'check-circle' : 'circle-thin'} size={20} color={statusFinalizado ? '#5C8E8B' : '#888'} />
+                                <TouchableOpacity style={styles.radioOption} onPress={() => setStatusRetirado(true)}>
+                                    <FontAwesome name={statusRetirado ? 'check-circle' : 'circle-thin'} size={20} color={statusRetirado ? '#5C8E8B' : '#888'} />
                                     <Text style={styles.radioText}>Retirou</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity style={styles.radioOption} onPress={() => {
-                                    setStatusRetirado(false)
-                                    setStatusFinalizado(false)
-                                }}>
-                                    <FontAwesome name={!statusFinalizado ? 'check-circle' : 'circle-thin'} size={20} color={!statusFinalizado ? '#5C8E8B' : '#888'} />
+                                <TouchableOpacity style={styles.radioOption} onPress={() => setStatusRetirado(false)}>
+                                    <FontAwesome name={!statusRetirado ? 'check-circle' : 'circle-thin'} size={20} color={!statusRetirado ? '#5C8E8B' : '#888'} />
                                     <Text style={styles.radioText}>Ainda não retirou</Text>
                                 </TouchableOpacity>
                             </View>
@@ -233,6 +241,7 @@ const styles = StyleSheet.create({
     card: { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 5 },
     header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, },
     backButton: { marginRight: 15, padding: 5 },
+    deleteButton: { padding: 5 },
     headerIcon: { marginRight: 10 },
     headerTitle: { fontSize: 28, fontWeight: 'bold', color: '#333' },
     clientName: { fontSize: 22, fontWeight: '600', textAlign: 'center', color: '#333', paddingVertical: 15, borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#EEE', marginBottom: 15 },
@@ -258,4 +267,4 @@ const styles = StyleSheet.create({
     circleThree: { width: 250, height: 250, borderRadius: 125, backgroundColor: '#8C5454', bottom: -80, left: -100 },
     circleFour: { width: 350, height: 350, borderRadius: 175, backgroundColor: '#D9C47E', bottom: -150, right: -100 },
     reciboIcon: { width: 40, height: 40, marginRight: 10, marginLeft: 20, resizeMode: 'contain' },
-})
+});
