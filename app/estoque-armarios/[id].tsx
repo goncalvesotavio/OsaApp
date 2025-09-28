@@ -1,6 +1,6 @@
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -52,7 +52,7 @@ const secoesMecanica = [
 ];
 
 export default function TelaDetalheCorredor() {
-    const { id: corredorId } = useLocalSearchParams();
+    const { id: corredorId } = useLocalSearchParams()
 
     const SecaoArmario = ({ secao }) => (
         <View style={styles.secaoContainer}>
