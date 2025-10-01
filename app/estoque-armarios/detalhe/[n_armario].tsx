@@ -6,14 +6,14 @@ import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacit
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ArmarioIcon = require('../../../assets/icons/armarios gestao.png');
-const ContratoIcon = require('../../../assets/icons/relatorio.png');
+const NovoContratoIcon = require('../../../assets/icons/contrato.png');
 
 interface Armario {
     N_armario: number;
     Corredor: string;
     Disponivel: boolean;
     Funcional: boolean;
-    Vendas_armários: { id_venda: number }[];
+    Vendas_armários: { id_venda: number, Contrato: string }[];
 }
 interface Cliente {
     Nome: string;
@@ -37,13 +37,15 @@ export default function TelaDetalheArmario() {
         const carregarDetalhes = async () => {
             if (!n_armario) return;
             setLoading(true);
+            setCliente(null);
+            setVenda(null);
             const numeroArmario = Number(n_armario);
             
             const armarioDataArray = await buscarArmario(numeroArmario);
             if (armarioDataArray && armarioDataArray.length > 0) {
                 const armarioAtual = armarioDataArray[0];
                 setArmario(armarioAtual);
-
+                
                 const isOcupado = !armarioAtual.Disponivel && armarioAtual.Vendas_armários && armarioAtual.Vendas_armários.length > 0;
                 
                 if (isOcupado) {
@@ -75,10 +77,7 @@ export default function TelaDetalheArmario() {
     const formatarData = (dataString) => {
         if (!dataString) return "N/A";
         const data = new Date(dataString);
-        const dia = String(data.getDate()).padStart(2, '0');
-        const mes = String(data.getMonth() + 1).padStart(2, '0');
-        const ano = data.getFullYear();
-        return `${dia}/${mes}/${ano}`;
+        return data.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
     };
     
     const calcularVencimento = (dataString) => {
@@ -103,6 +102,7 @@ export default function TelaDetalheArmario() {
             return <Text style={styles.infoText}>Este armário não está alugado.</Text>;
         }
         if (cliente) {
+            const contratoUrl = armario?.Vendas_armários?.[0]?.Contrato;
             return (
                 <View>
                     <DetalheItem label="Ocupado por:" value={cliente.Nome} />
@@ -111,10 +111,16 @@ export default function TelaDetalheArmario() {
                     <DetalheItem label="Série:" value={cliente.Serie} />
                     <DetalheItem label="Data de compra:" value={formatarData(venda?.Data)} />
                     <DetalheItem label="Vencimento de contrato:" value={calcularVencimento(venda?.Data)} />
-                    <View style={styles.contratoContainer}>
-                        <Text style={styles.detalheLabel}>Visualize o contrato:</Text>
-                        <TouchableOpacity><Image source={ContratoIcon} style={styles.contratoIcon} /></TouchableOpacity>
-                    </View>
+                    {contratoUrl && (
+                        <View style={styles.contratoContainer}>
+                            <Text style={styles.detalheLabel}>Visualize o contrato:</Text>
+                            <Link href={{ pathname: '/estoque-armarios/contrato', params: { url: contratoUrl } }} asChild>
+                                <TouchableOpacity style={styles.contratoButton}>
+                                    <Image source={NovoContratoIcon} style={styles.contratoButtonIcon} />
+                                </TouchableOpacity>
+                            </Link>
+                        </View>
+                    )}
                 </View>
             );
         }
@@ -199,5 +205,6 @@ const styles = StyleSheet.create({
     detalheLabel: { fontSize: 16, color: '#333', fontWeight: 'bold' },
     detalheValue: { fontSize: 16, color: '#555', flex: 1, textAlign: 'right' },
     contratoContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15 },
-    contratoIcon: { width: 35, height: 35, resizeMode: 'contain' },
+    contratoButton: { backgroundColor: '#5C8E8B', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 15, justifyContent: 'center', alignItems: 'center', minWidth: 100, height: 50 },
+    contratoButtonIcon: { width: 30, height: 30, tintColor: '#FFFFFF', resizeMode: 'contain' },
 });

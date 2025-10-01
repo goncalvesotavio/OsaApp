@@ -18,7 +18,7 @@ export async function arrecadacaoTotal() {
 export async function arrecadacaoTotalUniformes() {
   const { data, error } = await supabase
     .from('Vendas_uniformes')
-    .select('Preco_total')
+    .select('Preco_total, Vendas-2025!inner(Compra_finalizada)')
     .eq('Vendas-2025.Compra_finalizada', true)
 
     if (error) { 
@@ -33,7 +33,7 @@ export async function arrecadacaoTotalUniformes() {
 export async function arrecadacaoUniforme(id_uniforme) {
   const { data, error } = await supabase
     .from('Vendas_uniformes')
-    .select('Preco_total')
+    .select('Preco_total, Vendas-2025!inner(Compra_finalizada)')
     .eq('id_uniforme', id_uniforme)
     .eq('Vendas-2025.Compra_finalizada', true)
 
@@ -49,7 +49,7 @@ export async function arrecadacaoUniforme(id_uniforme) {
 export async function arrecadacaoUniformeTamanho(id_estoque) {
   const { data, error } = await supabase
     .from('Vendas_uniformes')
-    .select('Preco_total')
+    .select('Preco_total, Vendas-2025!inner(Compra_finalizada)')
     .eq('Vendas-2025.Compra_finalizada', true)
     .eq('Tamanho', id_estoque)
 
@@ -80,7 +80,7 @@ export async function arrecadacaoArmarios() {
 export async function fetchVendasUniformesPorPeriodo(dataInicio: string, dataFim: string) {
   const { data, error } = await supabase
     .from('Vendas_uniformes')
-    .select(`Preco_total, Uniformes (*), Vendas-2025!inner (Data)`)
+    .select(`id, Preco_total, Uniformes (*), Vendas-2025!inner (Data, Compra_finalizada)`)
     .gte('Vendas-2025.Data', dataInicio)
     .lte('Vendas-2025.Data', dataFim)
     .eq('Vendas-2025.Compra_finalizada', true)
@@ -96,7 +96,7 @@ export async function fetchVendasUniformesPorPeriodo(dataInicio: string, dataFim
 export async function fetchVendasDeUmUniformePorPeriodo(id_uniforme: number, dataInicio: string, dataFim: string) {
   const { data, error } = await supabase
     .from('Vendas_uniformes')
-    .select(`Qtd, Preco_total, Estoque_uniforme(Tamanho), Uniformes!inner(id_uniforme), Vendas-2025!inner(Data)`)
+    .select(`Qtd, Preco_total, Estoque_uniforme(Tamanho), Uniformes!inner(id_uniforme), Vendas-2025!inner(Data, Compra_finalizada)`)
     .eq('Uniformes.id_uniforme', id_uniforme)
     .eq('Vendas-2025.Compra_finalizada', true)
     .gte('Vendas-2025.Data', dataInicio)
@@ -114,9 +114,10 @@ export async function fetchVendasArmariosPorPeriodo(dataInicio: string, dataFim:
   const { data, error } = await supabase
     .from('Vendas_armários')
     .select(`
+      id,
       N_armario,
       Armários(preco: "Preco(R$)"),
-      Vendas-2025!inner(Data)
+      Vendas-2025!inner(Data, Pago)
     `)
     .gte('Vendas-2025.Data', dataInicio)
     .lte('Vendas-2025.Data', dataFim)

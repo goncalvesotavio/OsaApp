@@ -1,10 +1,9 @@
 import { FontAwesome5 } from '@expo/vector-icons'
-import { Link } from 'expo-router'
-import React, { useEffect, useMemo, useState } from 'react'
+import { Link, useFocusEffect } from 'expo-router'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
     ActivityIndicator,
     FlatList,
-    SafeAreaView, 
     StatusBar,
     StyleSheet,
     Text,
@@ -12,6 +11,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchPedidosFinalizados, fetchPedidosPendentes } from '@/lib/fetchPedidos'
 import { supabase } from '@/supabase/supabase'
 
@@ -36,7 +36,6 @@ export default function TelaPedidos() {
             setListaPedidosFinalizados(finalizados || [])
         } catch (error) {
             setListaPedidosFinalizados([])
-            console.error('Erro ao buscar pedidos finalizados:', error)
         }
     }
 
@@ -46,38 +45,36 @@ export default function TelaPedidos() {
             setListaPedidosPendentes(pendentes || [])
         } catch (error) {
             setListaPedidosPendentes([])
-            console.error('Erro ao buscar pedidos pendentes:', error)
         }
     }
 
-    const carregarPedidosIniciais = async () => {
+    const carregarPedidosIniciais = useCallback(() => {
         setLoading(true);
-        await Promise.all([listarFinalizados(), listarPendentes()]);
-        setLoading(false)
-    }
-
-    useEffect(() => {
-        carregarPedidosIniciais();
+        Promise.all([listarFinalizados(), listarPendentes()]).finally(() => {
+            setLoading(false)
+        });
     }, []);
 
+    useFocusEffect(
+        carregarPedidosIniciais
+    );
+
     useEffect(() => {
-        const subscription = supabase
+        const channel = supabase
             .channel('vendas_realtime')
             .on(
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'Vendas-2025' },
-                (payload) => {
-                    console.log('Mudança recebida!', payload);
-                    listarFinalizados();
-                    listarPendentes();
+                () => {
+                    carregarPedidosIniciais();
                 }
             )
             .subscribe();
 
         return () => {
-            supabase.removeChannel(subscription);
+            supabase.removeChannel(channel);
         };
-    }, []); 
+    }, [carregarPedidosIniciais]); 
 
     const pedidosFinalizadosFiltrados = useMemo(() => {
         if (!textoPesquisa) {

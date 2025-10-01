@@ -6,11 +6,11 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 LocaleConfig.locales['pt-br'] = {
-    monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
-    monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-    dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
-    dayNamesShort: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'],
-    today: 'Hoje'
+  monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
+  monthNamesShort: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+  dayNames: ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'],
+  dayNamesShort: ['D','S','T','Q','Q','S','S'],
+  today: 'Hoje'
 };
 LocaleConfig.defaultLocale = 'pt-br';
 
@@ -20,10 +20,10 @@ export default function TelaSelecionarDataRelatorio() {
 
     const [dataInicio, setDataInicio] = useState(new Date());
     const [dataFim, setDataFim] = useState(new Date());
-
+    
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [datePickerMode, setDatePickerMode] = useState<'inicio' | 'fim'>('inicio');
-
+    
     const [calendarDate, setCalendarDate] = useState(new Date().toISOString().split('T')[0]);
     const [showYearPicker, setShowYearPicker] = useState(false);
 
@@ -48,13 +48,13 @@ export default function TelaSelecionarDataRelatorio() {
     const formatarData = (data: Date) => {
         return data.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
     };
-
+    
     const formatarDataParaURL = (data: Date) => {
         return data.toISOString().split('T')[0];
     };
 
     const gerarRelatorio = () => {
-        const params = {
+        const params = { 
             dataInicio: formatarDataParaURL(dataInicio),
             dataFim: formatarDataParaURL(dataFim)
         };
@@ -62,6 +62,8 @@ export default function TelaSelecionarDataRelatorio() {
             router.push({ pathname: "/relatorio-vendas/uniformes-resultado", params });
         } else if (tipo === 'armarios') {
             router.push({ pathname: "/relatorio-vendas/armarios-resultado", params });
+        } else if (tipo === 'geral') {
+            router.push({ pathname: "/relatorio-vendas/geral-resultado", params });
         }
     };
 

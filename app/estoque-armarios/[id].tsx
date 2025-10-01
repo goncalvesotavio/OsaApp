@@ -1,6 +1,6 @@
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -52,7 +52,7 @@ const secoesMecanica = [
 ];
 
 export default function TelaDetalheCorredor() {
-    const { id: corredorId } = useLocalSearchParams()
+    const { id: corredorId } = useLocalSearchParams();
 
     const SecaoArmario = ({ secao }) => (
         <View style={styles.secaoContainer}>
@@ -84,38 +84,21 @@ export default function TelaDetalheCorredor() {
         </View>
     );
 
-    const LayoutCorredor1 = () => (
-        <><LinhaSala numero={1} /><SecaoArmario secao={secoesCorredor1[0]} /><SecaoArmario secao={secoesCorredor1[1]} /><LinhaSala numero={2} /><SecaoArmario secao={secoesCorredor1[2]} /><SecaoArmario secao={secoesCorredor1[3]} /><SecaoArmario secao={secoesCorredor1[4]} /><LinhaSala numero={3} /><SecaoArmario secao={secoesCorredor1[5]} /><SecaoArmario secao={secoesCorredor1[6]} /><LinhaSala numero={4} /><SecaoArmario secao={secoesCorredor1[7]} /><LinhaSala numero={5} /><SecaoArmario secao={secoesCorredor1[8]} /><SecaoArmario secao={secoesCorredor1[9]} /><LinhaSala numero={6} /><SecaoArmario secao={secoesCorredor1[10]} /><SecaoArmario secao={secoesCorredor1[11]} /><LinhaSala numero={7} /></>
-    );
-
-    const LayoutCorredor2 = () => (
-        <><SecaoArmario secao={secoesCorredor2[0]} /><LinhaSala numero={8} /><SecaoArmario secao={secoesCorredor2[1]} /><SecaoArmario secao={secoesCorredor2[2]} /><SecaoArmario secao={secoesCorredor2[3]} /><LinhaSala numero={9} /><SecaoArmario secao={secoesCorredor2[4]} /><SecaoArmario secao={secoesCorredor2[5]} /><LinhaSala numero={10} /><SecaoArmario secao={secoesCorredor2[6]} /><SecaoArmario secao={secoesCorredor2[7]} /><LinhaSala numero={11} /><SecaoArmario secao={secoesCorredor2[8]} /><SecaoArmario secao={secoesCorredor2[9]} /><LinhaSala numero={12} /></>
-    );
-
-    const LayoutCorredor3 = () => (
-        <><LinhaSala numero={13} /><SecaoArmario secao={secoesCorredor3[0]} /><SecaoArmario secao={secoesCorredor3[1]} /><LinhaSala numero={14} /><SecaoArmario secao={secoesCorredor3[2]} /><SecaoArmario secao={secoesCorredor3[3]} /><SecaoArmario secao={secoesCorredor3[4]} /><LinhaSala numero={15} /><SecaoArmario secao={secoesCorredor3[5]} /><LinhaSala numero={16} /></>
-    );
-
-    const LayoutMecanica = () => (
-        <><SecaoArmario secao={secoesMecanica[0]} /><SecaoArmario secao={secoesMecanica[1]} /><LinhaSala numero={17} /><SecaoArmario secao={secoesMecanica[2]} /><SecaoArmario secao={secoesMecanica[3]} /><SecaoArmario secao={secoesMecanica[4]} /><LinhaSala numero={18} /></>
-    );
+    const LayoutCorredor1 = () => <><LinhaSala numero={1} /><SecaoArmario secao={secoesCorredor1[0]} /><SecaoArmario secao={secoesCorredor1[1]} /><LinhaSala numero={2} /><SecaoArmario secao={secoesCorredor1[2]} /><SecaoArmario secao={secoesCorredor1[3]} /><SecaoArmario secao={secoesCorredor1[4]} /><LinhaSala numero={3} /><SecaoArmario secao={secoesCorredor1[5]} /><SecaoArmario secao={secoesCorredor1[6]} /><LinhaSala numero={4} /><SecaoArmario secao={secoesCorredor1[7]} /><LinhaSala numero={5} /><SecaoArmario secao={secoesCorredor1[8]} /><SecaoArmario secao={secoesCorredor1[9]} /><LinhaSala numero={6} /><SecaoArmario secao={secoesCorredor1[10]} /><SecaoArmario secao={secoesCorredor1[11]} /><LinhaSala numero={7} /></>;
+    const LayoutCorredor2 = () => <><SecaoArmario secao={secoesCorredor2[0]} /><LinhaSala numero={8} /><SecaoArmario secao={secoesCorredor2[1]} /><SecaoArmario secao={secoesCorredor2[2]} /><SecaoArmario secao={secoesCorredor2[3]} /><LinhaSala numero={9} /><SecaoArmario secao={secoesCorredor2[4]} /><SecaoArmario secao={secoesCorredor2[5]} /><LinhaSala numero={10} /><SecaoArmario secao={secoesCorredor2[6]} /><SecaoArmario secao={secoesCorredor2[7]} /><LinhaSala numero={11} /><SecaoArmario secao={secoesCorredor2[8]} /><SecaoArmario secao={secoesCorredor2[9]} /><LinhaSala numero={12} /></>;
+    const LayoutCorredor3 = () => <><LinhaSala numero={13} /><SecaoArmario secao={secoesCorredor3[0]} /><SecaoArmario secao={secoesCorredor3[1]} /><LinhaSala numero={14} /><SecaoArmario secao={secoesCorredor3[2]} /><SecaoArmario secao={secoesCorredor3[3]} /><SecaoArmario secao={secoesCorredor3[4]} /><LinhaSala numero={15} /><SecaoArmario secao={secoesCorredor3[5]} /><LinhaSala numero={16} /></>;
+    const LayoutMecanica = () => <><SecaoArmario secao={secoesMecanica[0]} /><SecaoArmario secao={secoesMecanica[1]} /><LinhaSala numero={17} /><SecaoArmario secao={secoesMecanica[2]} /><SecaoArmario secao={secoesMecanica[3]} /><SecaoArmario secao={secoesMecanica[4]} /><LinhaSala numero={18} /></>;
 
     return (
         <SafeAreaView style={styles.safeArea}>
             <Stack.Screen options={{ headerShown: false }} />
-            <View style={[styles.circle, styles.circleOne]} />
-            <View style={[styles.circle, styles.circleTwo]} />
-            <View style={[styles.circle, styles.circleThree]} />
-            <View style={[styles.circle, styles.circleFour]} />
-
+            <View style={[styles.circle, styles.circleOne]} /><View style={[styles.circle, styles.circleTwo]} /><View style={[styles.circle, styles.circleThree]} /><View style={[styles.circle, styles.circleFour]} />
             <View style={styles.header}>
                 <Link href="/estoque-armarios" asChild><TouchableOpacity style={styles.backButton}><FontAwesome5 name="arrow-left" size={24} color="#333" /></TouchableOpacity></Link>
                 <Image source={ArmarioIcon} style={styles.headerIcon} />
                 <Text style={styles.headerTitle}>Estoque de Armários</Text>
             </View>
-            
             <Text style={styles.subtitle}>Selecione um armário:</Text>
-
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.linhaConectora} />
                 {corredorId === '1' && <LayoutCorredor1 />}
