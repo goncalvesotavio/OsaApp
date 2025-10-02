@@ -119,15 +119,86 @@ export async function checkIfVendaHasUniformes(id_venda: number) {
 
 export async function deletePedido(id_venda: number) {
   try {
-    await supabase.from('Vendas_uniformes').delete().eq('id_venda', id_venda);
-    await supabase.from('Vendas_armários').delete().eq('id_venda', id_venda);
+    const { data } = await supabase
+    .from('Vendas_uniformes')
+    .select(`
+      Tamanho,
+      Qtd
+    `)
+    .eq('id_venda', id_venda)
 
-    const { error } = await supabase.from('Vendas-2025').delete().eq('id_venda', id_venda);
-    if (error) throw error;
+    if (data && data.length > 0) {
+      for (const venda of data) {
+        await mudarEstoque(venda.Tamanho, venda.Qtd)
+      }
+    }
 
-    return { error: null };
+    await supabase
+    .from('Vendas_uniformes')
+    .delete()
+    .eq('id_venda', id_venda)
+
+    const { data: dataArmario } = await supabase
+      .from('Vendas_armários')
+      .select('N_armario')
+      .eq('id_venda', id_venda)
+
+    if (dataArmario && dataArmario.length > 0){
+      for (const venda of dataArmario) {
+        await mudarArmario(venda.N_armario)
+      }
+    }
+
+    await supabase
+    .from('Vendas_armários')
+    .delete()
+    .eq('id_venda', id_venda)
+
+    const { error } = await supabase
+      .from('Vendas-2025')
+      .delete()
+      .eq('id_venda', id_venda)
+
+    if (error) throw error
+
+    return { error: null }
   } catch (error) {
-    console.error('Erro ao deletar pedido:', error);
-    return { error };
+    console.error('Erro ao deletar pedido:', error)
+    return { error }
   }
+}
+
+export async function mudarEstoque(Tamanho: number, Qtd: number) {
+  const { data, error: selectError } = await supabase
+    .from('Estoque_uniforme')
+    .select('Qtd_estoque')
+    .eq('id_estoque', Tamanho)
+    .single()
+
+  if (selectError) {
+    console.error("Erro ao buscar estoque:", selectError)
+    return
+  }
+
+  const novoValor = (data?.Qtd_estoque || 0) + Qtd
+
+  const { error: updateError } = await supabase
+    .from('Estoque_uniforme')
+    .update({ Qtd_estoque: novoValor })
+    .eq('id_estoque', Tamanho)
+
+  if (updateError) {
+    console.error("Erro ao atualizar estoque:", updateError)
+  }
+}
+
+export async function mudarArmario(n_armario: number){
+  const { error } = await supabase
+    .from('Armários')
+    .update({ Disponivel: 'true' })
+    .eq('N_armario', n_armario)
+
+    if(error){
+      console.error('Erro ao mudar armário: ', error)
+    }
 }
