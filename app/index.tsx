@@ -1,12 +1,13 @@
+import { FontAwesome5 } from '@expo/vector-icons';
 import React from 'react';
 import {
+  Image,
+  ImageSourcePropType,
+  StatusBar,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  StatusBar,
-  Image,
-  ImageSourcePropType
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
@@ -35,34 +36,42 @@ export default function TelaInicio() {
           </Text>
 
           <Link href="/pedidos" asChild>
-            <MenuButton 
+            <MenuButton
               iconSource={require('../assets/icons/pedidos.png')}
               title="Pedidos"
-              onPress={() => {}}
+              onPress={() => { }}
             />
           </Link>
-          
+
           <Link href="/estoque-uniformes" asChild>
-            <MenuButton 
+            <MenuButton
               iconSource={require('../assets/icons/uniformes gestao.png')}
               title="Estoque Uniformes"
-              onPress={() => {}}
+              onPress={() => { }}
             />
           </Link>
 
           <Link href="/estoque-armarios" asChild>
-            <MenuButton 
+            <MenuButton
               iconSource={require('../assets/icons/armarios gestao.png')}
               title="Estoque Armários"
-              onPress={() => {}}
+              onPress={() => { }}
             />
           </Link>
-          
+
           <Link href="/relatorio-vendas" asChild>
-            <MenuButton 
+            <MenuButton
               iconSource={require('../assets/icons/relatorio.png')}
               title="Relatório de Vendas"
-              onPress={() => {}}
+              onPress={() => { }}
+            />
+          </Link>
+
+          <Link href="/controle-contrato" asChild>
+            <MenuButton
+              iconSource={require('../assets/icons/controle-contrato.png')}
+              title="Controle Contrato"
+              onPress={() => { }}
             />
           </Link>
         </View>
@@ -82,6 +91,6 @@ const styles = StyleSheet.create({
   content: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
   title: { fontSize: 26, fontWeight: '600', color: '#333', textAlign: 'center', marginBottom: 50 },
   button: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', paddingVertical: 15, paddingHorizontal: 25, borderRadius: 30, marginBottom: 20, width: '90%', maxWidth: 400, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3.84, elevation: 5 },
-  buttonIconImage: { width: 35, height: 35, marginRight: 20 },
+  buttonIconImage: { width: 35, height: 35, marginRight: 20, resizeMode: 'contain' },
   buttonText: { fontSize: 18, fontWeight: '500', color: '#333' },
 });

@@ -57,8 +57,8 @@ const styles = StyleSheet.create({
     subtitle: { fontSize: 18, color: '#444', fontWeight: '500', marginBottom: 15, textAlign: 'center' },
     webviewContainer: {
         flex: 1,
-        backgroundColor: '#ffffffff',
-        borderRadius: 10,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 15,
         overflow: 'hidden',
         elevation: 4,
         shadowColor: '#000',
@@ -69,7 +69,6 @@ const styles = StyleSheet.create({
     webview: {
         flex: 1,
     },
-    
     errorText: {
         textAlign: 'center',
         padding: 20,
