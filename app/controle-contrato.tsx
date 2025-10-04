@@ -1,8 +1,9 @@
 import { fetchPrecoPadraoArmario } from '@/lib/fetchArmarios';
+import { buscarDatas, novasDatas, novoPreco } from '@/lib/fetchContratos';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Link, Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -31,13 +32,21 @@ export default function TelaControleContrato() {
     useEffect(() => {
         const carregarDadosIniciais = async () => {
             setLoading(true);
-            const precoPadrao = await fetchPrecoPadraoArmario();
+            const precoPadrao = await fetchPrecoPadraoArmario()
             if (precoPadrao !== null) {
-                setPreco(String(precoPadrao));
+                setPreco(String(precoPadrao))
             }
-            setLoading(false);
+
+            const datas = await buscarDatas(new Date().getFullYear());
+            const primeiroContrato = datas[0];
+            if (primeiroContrato) {
+                setDataAnual(primeiroContrato.Data_anual ? new Date(primeiroContrato.Data_anual) : undefined);
+                setDataSemestral(primeiroContrato.Data_semestral ? new Date(primeiroContrato.Data_semestral) : undefined);
+            }
+            
+            setLoading(false)
         };
-        carregarDadosIniciais();
+        carregarDadosIniciais()
     }, []);
 
     const openCalendar = (mode: 'anual' | 'semestral') => {
@@ -52,11 +61,11 @@ export default function TelaControleContrato() {
         if (datePickerMode === 'anual') {
             setDataAnual(selectedDate);
         } else {
-            setDataSemestral(selectedDate);
+            setDataSemestral(selectedDate)
         }
-        setIsModalVisible(false);
-        setShowYearPicker(false);
-    };
+        setIsModalVisible(false)
+        setShowYearPicker(false)
+    }
     
     const formatarData = (data: Date) => data.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
 
@@ -94,6 +103,11 @@ export default function TelaControleContrato() {
 
     if (loading) {
         return <SafeAreaView style={styles.safeArea}><ActivityIndicator size="large" color="#5C8E8B" /></SafeAreaView>;
+    }
+
+    const salvar = async () => {
+        await novasDatas(new Date().getFullYear(), dataAnual, dataSemestral)
+        await novoPreco(parseFloat(preco))
     }
 
     return (
@@ -159,7 +173,7 @@ export default function TelaControleContrato() {
                         </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity style={styles.saveButton} onPress={() => Alert.alert("Salvar", "Funcionalidade de salvar a ser implementada.")}>
+                    <TouchableOpacity style={styles.saveButton} onPress={() => salvar()}>
                         <Text style={styles.saveButtonText}>Salvar Alterações</Text>
                     </TouchableOpacity>
                 </View>
